@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <title>WebSocket Test</title>
+  </head>
+  <body>
+    <script>
+      const socket = new WebSocket("ws://127.0.0.1:8000/ws/chat/");
+
+socket.onopen = () => {
+  console.log("✅ Соединение установлено");
+  socket.send(JSON.stringify({ text: "Привет от браузера!" }));
+};
+
+socket.onmessage = (event) => {
+  const data = JSON.parse(event.data);
+  console.log("📨 Ответ от сервера:", data.message);
+};
+
+socket.onclose = (e) => {
+  console.warn("❌ Соединение закрыто:", e);
+};
+
+socket.onerror = (err) => {
+  console.error("⚠️ Ошибка соединения:", err);
+};
+    </script>
+  </body>
+</html>

@@ -1,0 +1,8 @@
+Django==5.2.4
+djangorestframework==3.16.0
+django-cors-headers==4.7.0
+channels==4.2.2
+daphne==4.2.1
+autobahn==24.4.2
+twisted==25.5.0
+service-identity==24.2.0 
