@@ -7,6 +7,7 @@ from rest_framework.authentication import get_authorization_header
 from .auth import BearerToken
 from rest_framework.authtoken.models import Token
 from django.core.exceptions import ObjectDoesNotExist
+from channels.layers import get_channel_layer
 
 class ChatConsumer(AsyncWebsocketConsumer):
     async def connect(self):
@@ -135,19 +136,44 @@ class ChatConsumer(AsyncWebsocketConsumer):
         message = data.get('text')
         if message:
             user = self.scope['user']
-
+            channel_layer = get_channel_layer()
+            print('channel_layer:', channel_layer)
             if self.chat_type == 'private':
                 chat = await self.get_private_chat(user)
                 if not chat:
                     await self.close(code=4004)
                     return
                 message_obj = await sync_to_async(Message.objects.create)(text=message, user=user, private_chat=chat)
+                user1 = await sync_to_async(lambda: chat.user1)()
+                user2 = await sync_to_async(lambda: chat.user2)()
+                other_user = user1 if user != user1 else user2
+                print(f"Отправляю уведомление пользователю {other_user.id} (private): {message_obj.text}")
+                await channel_layer.group_send(
+                    f'notifications_{other_user.id}',
+                    {
+                        'type': 'notify',
+                        'message': message_obj.text,
+                        'from_user': user.name
+                    }
+                )
             elif self.chat_type == 'group':
                 chat = await self.get_group_chat(user)
                 if not chat:
                     await self.close(code=4004)
                     return
                 message_obj = await sync_to_async(Message.objects.create)(text=message, user=user, group_chat=chat)
+                participants = await sync_to_async(lambda: list(chat.participants.exclude(id=user.id).all()))()
+                for participant in participants:
+                    print(f"Отправляю уведомление пользователю {participant.id} (group): {message_obj.text}")
+                    await channel_layer.group_send(
+                        f'notifications_{participant.id}',
+                        {
+                            'type': 'notify',
+                            'message': message_obj.text,
+                            'from_user': user.name,
+                            'group': chat.name
+                        }
+                    )
             else:
                 await self.close(code=4003)
                 return

@@ -47,7 +47,7 @@ function Chat() {
   };
 
   useEffect(() => {
-    socketRef.current = new WebSocket(`ws://192.168.8.209:8000/ws/chat/?token=${localStorage.getItem("token")}&chatId=${chatId}&chat=${chatType}`);
+    socketRef.current = new WebSocket(`wss://192.168.8.209:8000/ws/chat/?token=${localStorage.getItem("token")}&chatId=${chatId}&chat=${chatType}`);
     socketRef.current.onopen = () => console.log("connected");
     socketRef.current.onmessage = (event) => {
       const data = JSON.parse(event.data);
@@ -130,7 +130,7 @@ function Chat() {
           >
             Add people
           </button>
-          {showAddToGroup && (
+          {showAddToGroup && (  
             <form onSubmit={(e) => addToGroup(e, chatId, userId)} className="flex gap-2 mt-2">
               <select value={userId} onChange={e => setUserId(e.target.value)} className="rounded-lg border border-violet-200 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-violet-400 bg-violet-50 text-violet-900 transition">
                 <option>выберите людей</option>
