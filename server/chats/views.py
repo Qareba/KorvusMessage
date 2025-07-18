@@ -145,7 +145,7 @@ class GroupChatCreateView(APIView):
             'message': 'Chat created successfully',
             'chat_id': chat.id,
             'name': name,
-            'participants': chat.participants,
+            # 'participants': chat.participants,
         }, status=status.HTTP_201_CREATED)
     
 class GroupAddAPIView(APIView):

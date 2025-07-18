@@ -120,7 +120,9 @@ class ChatConsumer(AsyncWebsocketConsumer):
                             'type': 'chat_message',
                             'message': message,
                             'id': message_obj.id,
-                            'user': user.username
+                            'user': {
+                                'name': user.name
+                            }
                         }
                     )
 

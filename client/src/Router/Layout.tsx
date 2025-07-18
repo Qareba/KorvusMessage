@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link, Outlet, useNavigate } from 'react-router-dom'
 import { AuthProvider, useAuth } from '../AuthContext';
+import { pre } from 'framer-motion/client';
 
 function Layout() {
 
@@ -24,7 +25,6 @@ function Layout() {
   const [showCreateGroup, setShowCreateGroup] = useState<boolean>(false)
   const navigate = useNavigate();
   const {logout} = useAuth()
-  const [chatType, setChatType] = useState<string>('')
 
   const loadUsers = async () => {
     const response = await fetch(`${import.meta.env.VITE_API_URL}users`, {
@@ -110,10 +110,10 @@ function Layout() {
   
 
   return (
-    <div>
-      <nav style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-        <span style={{cursor: 'pointer'}} onClick={logoutHandler}>выйти из аккаунта</span>
-        <button onClick={() => setShowCreateGroup(true)}>Create group</button>
+    <div className="flex min-h-screen">
+      <nav className="w-60 flex flex-col gap-2 items-center justify-start bg-gray-100 shadow-md p-4">
+        <span className=' cursor-pointer' onClick={logoutHandler}>выйти из аккаунта</span>
+        <button onClick={() => setShowCreateGroup((prev) => !prev)}>Create group</button>
         {
           showCreateGroup ? (
             <form onSubmit={createGroup}>
@@ -143,8 +143,8 @@ function Layout() {
           ))
         }
       </nav>
-      <main>
-        <Outlet/>
+      <main className="flex-1">
+        <Outlet />
       </main>
     </div>
   )
