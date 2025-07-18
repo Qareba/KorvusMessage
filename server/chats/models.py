@@ -17,6 +17,7 @@ class Message(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='messages')
     private_chat = models.ForeignKey("PrivateChat", null=True, blank=True, on_delete=models.CASCADE, related_name='messages')
     group_chat = models.ForeignKey("GroupChat", null=True, blank=True, on_delete=models.CASCADE, related_name='messages')
+    edited = models.BooleanField(default=False)
 
     def __str__(self):
         return f"{self.timestamp}: {self.text[:50]}"

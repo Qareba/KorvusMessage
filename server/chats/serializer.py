@@ -39,7 +39,7 @@ class MessageSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Message
-        fields = ['id', 'text', 'timestamp', 'user']
+        fields = ['id', 'text', 'timestamp', 'user', 'edited']
 
 from .models import PrivateChat
 

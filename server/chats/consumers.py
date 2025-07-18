@@ -93,6 +93,44 @@ class ChatConsumer(AsyncWebsocketConsumer):
                     }
                 )
             return 
+        elif data.get('type') == 'update':
+            msg_id = data.get('id')
+            new_text = data.get('text')
+
+            if not msg_id or not new_text:
+                return  # Плохой запрос
+
+    # Получаем сообщение
+            message = await sync_to_async(lambda: Message.objects.filter(id=msg_id).first())()
+            if not message:
+                return
+
+    # Проверяем владельца
+            msg_user = await sync_to_async(lambda: message.user)()
+            if msg_user != self.scope['user']:
+                await self.send(text_data=json.dumps({
+            'error': 'You do not have permission to edit this message'
+                }))
+                return
+
+    # Обновляем текст
+            message.text = new_text
+            message.edited = True  # Если ты хочешь отмечать, что сообщение редактировалось
+            await sync_to_async(message.save)()
+
+    # Рассылаем обновлённое сообщение
+            await self.channel_layer.group_send(
+            self.room_group_name,
+            {
+                "type": "update_message",  # для Channels
+                "event": "update",         # для клиента
+                "id": msg_id,
+                "text": new_text,
+                "user": message.user.username,
+                "edited": True
+            })
+            return
+
 
         message = data.get('text')
         if message:
@@ -114,7 +152,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
                 await self.close(code=4003)
                 return
 
-        await self.channel_layer.group_send(
+            await self.channel_layer.group_send(
             self.room_group_name,
                         {
                             'type': 'chat_message',
@@ -139,7 +177,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
     async def delete_message(self, event):
         await self.send(text_data=json.dumps({
-        'type': 'delete',
+        'event': 'delete',
         'id': event['id'],
     }))
         
@@ -170,3 +208,15 @@ class ChatConsumer(AsyncWebsocketConsumer):
             return chat
         except GroupChat.DoesNotExist:
             return None
+
+    async def update_message(self, event):
+        await self.send(text_data=json.dumps({
+        "event": "update",
+        "text": event["text"],
+        "id": event["id"],
+        "user": event["user"],
+        "edited": event["edited"]
+    }))
+
+
+

@@ -37,6 +37,20 @@ class MessageDelete(APIView):
             'delete': 'succesful'
         })
     
+class MessageUpdateAPIView(APIView):
+
+    permission_classes = [IsAuthenticated]
+
+    def patch(self, req, id, *args, **kwargs):
+        message = get_object_or_404(Message, id = id)
+        if message.user != req.user:
+            return Response({'error': 'You do not have permission to delete this message'}, status=status.HTTP_403_FORBIDDEN)
+        serializer = MessageSerializer(data = req.data, instance = message, partial = True)
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        serializer.save()
+        return Response(serializer.data)
+    
 
 class RegisterView(APIView):
     
